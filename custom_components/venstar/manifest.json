@@ -5,4 +5,9 @@
   "requirements": ["venstarcolortouch==0.13", "getmac==0.8.2"],
   "codeowners": ["@doug-hoffman"],
   "config_flow": true,
+  "ssdp": [
+    {
+      "st": "venstar:thermostat:ecp"
+    }
+  ]
 }
