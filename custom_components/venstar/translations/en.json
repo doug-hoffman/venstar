@@ -1,0 +1,40 @@
+{
+    "config": {
+        "abort": {
+            "already_configured": "Device is already configured"
+        },
+        "error": {
+            "cannot_connect": "Failed to connect",
+            "connect_timeout": "Connection timed out",
+            "unknown": "Unexpected error"
+        },
+        "step": {
+            "user": {
+                "data": {
+                    "host": "Host",
+                    "password": "Password (if set)",
+                    "pin": "PIN Code (if set)",
+                    "port": "Port (optional)",
+                    "ssl": "Use SSL",
+                    "username": "Username (if set)"
+                }
+            }
+        }
+    },
+    "options": {
+        "error": {
+            "timeout_high": "Timeout cannot be longer than update interval"
+        },
+        "step": {
+            "init": {
+                "data": {
+                    "humidifier": "Enable humidifier support",
+                    "scan_interval": "Update interval (seconds)",
+                    "sensors": "Enable sensors",
+                    "timeout": "Timeout (seconds)"
+                }
+            }
+        }
+    },
+    "title": "Venstar"
+}

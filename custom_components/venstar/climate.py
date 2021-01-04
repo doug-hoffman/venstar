@@ -4,6 +4,7 @@ import logging
 from venstarcolortouch import VenstarColorTouch
 import voluptuous as vol
 
+from homeassistant.core import callback
 from homeassistant.components.climate import PLATFORM_SCHEMA, ClimateEntity
 from homeassistant.components.climate.const import (
     ATTR_HVAC_MODE,
@@ -27,94 +28,120 @@ from homeassistant.components.climate.const import (
     SUPPORT_TARGET_TEMPERATURE,
     SUPPORT_TARGET_TEMPERATURE_RANGE,
 )
+from homeassistant.config_entries import SOURCE_IMPORT
 from homeassistant.const import (
     ATTR_TEMPERATURE,
     CONF_HOST,
+    CONF_MAC,
     CONF_PASSWORD,
     CONF_PIN,
+    CONF_PORT,
     CONF_SSL,
     CONF_TIMEOUT,
     CONF_USERNAME,
+    EVENT_HOMEASSISTANT_START,
     PRECISION_HALVES,
     STATE_ON,
     TEMP_CELSIUS,
     TEMP_FAHRENHEIT,
 )
 import homeassistant.helpers.config_validation as cv
+from homeassistant.helpers.event import async_call_later
+from homeassistant.helpers.update_coordinator import (
+    CoordinatorEntity,
+)
+from homeassistant.helpers import device_registry as dr
+
+from .const import (
+    ATTR_FAN_STATE,
+    ATTR_HVAC_STATE,
+    CONF_HUMIDIFIER,
+    ENTRY_API,
+    ENTRY_CONNECTION_STATE,
+    ENTRY_COORDINATOR,
+    DEFAULT_CONF_HUMIDIFIER,
+    DEFAULT_CONF_PASSWORD,
+    DEFAULT_CONF_PIN,
+    DEFAULT_CONF_PORT,
+    DEFAULT_CONF_SSL,
+    DEFAULT_CONF_TIMEOUT,
+    DEFAULT_CONF_USERNAME,
+    DOMAIN,
+    HOLD_MODE_OFF,
+    HOLD_MODE_TEMPERATURE,
+    VALID_FAN_STATES,
+    VALID_THERMOSTAT_MODES,
+)
 
 _LOGGER = logging.getLogger(__name__)
-
-ATTR_FAN_STATE = "fan_state"
-ATTR_HVAC_STATE = "hvac_mode"
-
-CONF_HUMIDIFIER = "humidifier"
-
-DEFAULT_SSL = False
-
-VALID_FAN_STATES = [STATE_ON, HVAC_MODE_AUTO]
-VALID_THERMOSTAT_MODES = [HVAC_MODE_HEAT, HVAC_MODE_COOL, HVAC_MODE_OFF, HVAC_MODE_AUTO]
-
-HOLD_MODE_OFF = "off"
-HOLD_MODE_TEMPERATURE = "temperature"
 
 PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(
     {
         vol.Required(CONF_HOST): cv.string,
-        vol.Optional(CONF_PASSWORD): cv.string,
+        vol.Optional(CONF_PASSWORD, default=DEFAULT_CONF_PASSWORD): cv.string,
         vol.Optional(CONF_HUMIDIFIER, default=True): cv.boolean,
-        vol.Optional(CONF_SSL, default=DEFAULT_SSL): cv.boolean,
-        vol.Optional(CONF_TIMEOUT, default=5): vol.All(
+        vol.Optional(CONF_SSL, default=DEFAULT_CONF_SSL): cv.boolean,
+        vol.Optional(CONF_TIMEOUT, default=DEFAULT_CONF_TIMEOUT): vol.All(
             vol.Coerce(int), vol.Range(min=1)
         ),
-        vol.Optional(CONF_USERNAME): cv.string,
-        vol.Optional(CONF_PIN): cv.string,
+        vol.Optional(CONF_USERNAME, default=DEFAULT_CONF_USERNAME): cv.string,
+        vol.Optional(CONF_PIN, default=DEFAULT_CONF_PIN): cv.string,
     }
 )
 
 
-def setup_platform(hass, config, add_entities, discovery_info=None):
+async def async_setup_platform(hass, config, async_add_entities, discovery_info=None):
+    """Set up Venstar thermostat from configuration.yaml."""
+
+    @callback
+    def schedule_import(_):
+        """Schedule delayed import after HA is fully started."""
+        async_call_later(hass, 10, do_import)
+
+    @callback
+    def do_import(_):
+        """Process YAML import."""
+        hass.async_create_task(
+            hass.config_entries.flow.async_init(
+                DOMAIN, context={"source": SOURCE_IMPORT}, data=dict(config)
+            )
+        )
+
+    hass.bus.async_listen_once(EVENT_HOMEASSISTANT_START, schedule_import)
+
+
+async def async_setup_entry(hass, entry, async_add_entities):
     """Set up the Venstar thermostat."""
 
-    username = config.get(CONF_USERNAME)
-    password = config.get(CONF_PASSWORD)
-    pin = config.get(CONF_PIN)
-    host = config.get(CONF_HOST)
-    timeout = config.get(CONF_TIMEOUT)
-    humidifier = config.get(CONF_HUMIDIFIER)
-
-    protocol = "https" if config[CONF_SSL] else "http"
-
-    client = VenstarColorTouch(
-        addr=host,
-        timeout=timeout,
-        user=username,
-        password=password,
-        pin=pin,
-        proto=protocol,
+    async_add_entities(
+        [
+            VenstarThermostat(
+                hass.data[DOMAIN][entry.entry_id][ENTRY_COORDINATOR],
+                hass.data[DOMAIN][entry.entry_id][ENTRY_API],
+                entry,
+            )
+        ],
+        True,
     )
 
-    add_entities([VenstarThermostat(client, humidifier)], True)
 
-
-class VenstarThermostat(ClimateEntity):
+class VenstarThermostat(CoordinatorEntity, ClimateEntity):
     """Representation of a Venstar thermostat."""
 
-    def __init__(self, client, humidifier):
+    def __init__(self, coordinator, api, config_entry):
         """Initialize the thermostat."""
-        self._client = client
-        self._humidifier = humidifier
+        super().__init__(coordinator)
+        self._client = api
+        self._config_entry = config_entry
+        self._humidifier = config_entry.options.get(
+            CONF_HUMIDIFIER,
+            config_entry.data.get(CONF_HUMIDIFIER, DEFAULT_CONF_HUMIDIFIER),
+        )
         self._mode_map = {
             HVAC_MODE_HEAT: self._client.MODE_HEAT,
             HVAC_MODE_COOL: self._client.MODE_COOL,
             HVAC_MODE_AUTO: self._client.MODE_AUTO,
         }
-
-    def update(self):
-        """Update the data from the thermostat."""
-        info_success = self._client.update_info()
-        sensor_success = self._client.update_sensors()
-        if not info_success or not sensor_success:
-            _LOGGER.error("Failed to update data")
 
     @property
     def supported_features(self):
@@ -133,6 +160,34 @@ class VenstarThermostat(ClimateEntity):
     def name(self):
         """Return the name of the thermostat."""
         return self._client.name
+
+    @property
+    def unique_id(self):
+        """Return the unique identifer of the thermostat."""
+        return f"{self._config_entry.unique_id or self._config_entry.entry_id}-Thermostat-Device"
+
+    @property
+    def device_info(self):
+        """Return the device info of the thermostat."""
+        device_info = {
+            "identifiers": {(DOMAIN, self.unique_id)},
+            "manufacturer": "Venstar",
+            "name": self._config_entry.title,
+            "model": self._client.model,
+        }
+        if self._config_entry.data.get(CONF_MAC) is not None:
+            device_info["connections"] = {
+                (dr.CONNECTION_NETWORK_MAC, self._config_entry.data.get(CONF_MAC))
+            }
+
+        return device_info
+
+    @property
+    def available(self):
+        """Return availability of the thermostat."""
+        return self.hass.data[DOMAIN][self._config_entry.entry_id][
+            ENTRY_CONNECTION_STATE
+        ]
 
     @property
     def precision(self):

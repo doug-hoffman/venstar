@@ -2,6 +2,7 @@
   "domain": "venstar",
   "name": "Venstar",
   "documentation": "https://www.home-assistant.io/integrations/venstar",
-  "requirements": ["venstarcolortouch==0.12"],
-  "codeowners": []
+  "requirements": ["venstarcolortouch==0.13", "getmac==0.8.2"],
+  "codeowners": ["@doug-hoffman"],
+  "config_flow": true,
 }
