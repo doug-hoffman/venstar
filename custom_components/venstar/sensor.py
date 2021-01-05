@@ -73,7 +73,7 @@ class VenstarSensor(CoordinatorEntity, Entity):
     @property
     def name(self):
         """Return the name of the this sensor."""
-        return self._sensor + " " + SENSOR_ATTRIBUTES[self._attr]["name"]
+        return f"{self._sensor} {SENSOR_ATTRIBUTES[self._attr]['name']}"
 
     @property
     def unique_id(self):
@@ -107,7 +107,7 @@ class VenstarSensor(CoordinatorEntity, Entity):
     @property
     def device_class(self):
         """Return the device class of the sensor."""
-        if self._attr in SENSOR_ATTRIBUTES:
+        if self._attr in SENSOR_ATTRIBUTES and "class" in SENSOR_ATTRIBUTES[self._attr]:
             return SENSOR_ATTRIBUTES[self._attr]["class"]
 
         return None
@@ -118,8 +118,8 @@ class VenstarSensor(CoordinatorEntity, Entity):
         state = self._api.get_sensor(self._sensor, self._attr)
         if type(state) is int or type(state) is float:
             return state
-        else:
-            return None
+
+        return None
 
     @property
     def unit_of_measurement(self):
