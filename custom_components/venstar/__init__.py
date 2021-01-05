@@ -109,7 +109,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
             if not info_success or not sensor_success:
                 hass.data[DOMAIN][entry.entry_id][ENTRY_CONNECTION_STATE] = False
                 raise UpdateFailed("unable to update data")
-        except TimeoutError:
+        except asyncio.TimeoutError:
             hass.data[DOMAIN][entry.entry_id][ENTRY_CONNECTION_STATE] = False
             raise UpdateFailed("timeout occurred while updating data")
         except Exception as err:  # pylint: disable=broad-except
