@@ -28,9 +28,6 @@ from .const import (
     SENSOR_HUMIDITY,
     SENSOR_ID,
     SENSOR_TEMPERATURE,
-    TEMPUNITS_C,
-    TEMPUNITS_F,
-    UNIT,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -127,7 +124,13 @@ class VenstarSensor(CoordinatorEntity, Entity):
     @property
     def unit_of_measurement(self):
         """Return the unit of measurement this sensor expresses itself in."""
-        if self._attr == SENSOR_TEMPERATURE:
-            return UNIT[self._attr][self._api.tempunits]
+        if self._attr in SENSOR_ATTRIBUTES and "unit" in SENSOR_ATTRIBUTES[self._attr]:
+            if (
+                self._attr == SENSOR_TEMPERATURE
+                and self._api.tempunits in SENSOR_ATTRIBUTES[self._attr]["unit"]
+            ):
+                return SENSOR_ATTRIBUTES[self._attr]["unit"][self._api.tempunits]
 
-        return UNIT[self._attr]
+            return SENSOR_ATTRIBUTES[self._attr]["unit"]
+
+        return None

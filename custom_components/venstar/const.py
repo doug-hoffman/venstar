@@ -47,23 +47,28 @@ SENSOR_HUMIDITY = "hum"
 SENSOR_ID = "id"
 SENSOR_TEMPERATURE = "temp"
 
-SENSOR_ATTRIBUTES = {
-    SENSOR_BATTERY: {"name": "Battery Level", "class": DEVICE_CLASS_BATTERY},
-    SENSOR_HUMIDITY: {"name": "Humidity", "class": DEVICE_CLASS_HUMIDITY},
-    SENSOR_ID: {"name": "ID"},
-    SENSOR_TEMPERATURE: {"name": "Temperature", "class": DEVICE_CLASS_TEMPERATURE},
-}
-
 TEMPUNITS_F = 0
 TEMPUNITS_C = 1
 
-UNIT = {
-    SENSOR_BATTERY: PERCENTAGE,
-    SENSOR_HUMIDITY: PERCENTAGE,
-    SENSOR_ID: "",
+SENSOR_ATTRIBUTES = {
+    SENSOR_BATTERY: {
+        "name": "Battery Level",
+        "class": DEVICE_CLASS_BATTERY,
+        "unit": PERCENTAGE,
+    },
+    SENSOR_HUMIDITY: {
+        "name": "Humidity",
+        "class": DEVICE_CLASS_HUMIDITY,
+        "unit": PERCENTAGE,
+    },
+    SENSOR_ID: {"name": "ID"},
     SENSOR_TEMPERATURE: {
-        TEMPUNITS_F: TEMP_FAHRENHEIT,
-        TEMPUNITS_C: TEMP_CELSIUS,
+        "name": "Temperature",
+        "class": DEVICE_CLASS_TEMPERATURE,
+        "unit": {
+            TEMPUNITS_F: TEMP_FAHRENHEIT,
+            TEMPUNITS_C: TEMP_CELSIUS,
+        },
     },
 }
 
