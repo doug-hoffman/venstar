@@ -28,6 +28,9 @@ from .const import (
     SENSOR_HUMIDITY,
     SENSOR_ID,
     SENSOR_TEMPERATURE,
+    SENSOR_PARAM_CLASS,
+    SENSOR_PARAM_NAME,
+    SENSOR_PARAM_UNIT,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -73,7 +76,7 @@ class VenstarSensor(CoordinatorEntity, Entity):
     @property
     def name(self):
         """Return the name of the this sensor."""
-        return f"{self._sensor} {SENSOR_ATTRIBUTES[self._attr]['name']}"
+        return f"{self._sensor} {SENSOR_ATTRIBUTES[self._attr][SENSOR_PARAM_NAME]}"
 
     @property
     def unique_id(self):
@@ -107,8 +110,11 @@ class VenstarSensor(CoordinatorEntity, Entity):
     @property
     def device_class(self):
         """Return the device class of the sensor."""
-        if self._attr in SENSOR_ATTRIBUTES and "class" in SENSOR_ATTRIBUTES[self._attr]:
-            return SENSOR_ATTRIBUTES[self._attr]["class"]
+        if (
+            self._attr in SENSOR_ATTRIBUTES
+            and SENSOR_PARAM_CLASS in SENSOR_ATTRIBUTES[self._attr]
+        ):
+            return SENSOR_ATTRIBUTES[self._attr][SENSOR_PARAM_CLASS]
 
         return None
 
@@ -124,13 +130,19 @@ class VenstarSensor(CoordinatorEntity, Entity):
     @property
     def unit_of_measurement(self):
         """Return the unit of measurement this sensor expresses itself in."""
-        if self._attr in SENSOR_ATTRIBUTES and "unit" in SENSOR_ATTRIBUTES[self._attr]:
+        if (
+            self._attr in SENSOR_ATTRIBUTES
+            and SENSOR_PARAM_UNIT in SENSOR_ATTRIBUTES[self._attr]
+        ):
             if (
                 self._attr == SENSOR_TEMPERATURE
-                and self._api.tempunits in SENSOR_ATTRIBUTES[self._attr]["unit"]
+                and self._api.tempunits
+                in SENSOR_ATTRIBUTES[self._attr][SENSOR_PARAM_UNIT]
             ):
-                return SENSOR_ATTRIBUTES[self._attr]["unit"][self._api.tempunits]
+                return SENSOR_ATTRIBUTES[self._attr][SENSOR_PARAM_UNIT][
+                    self._api.tempunits
+                ]
 
-            return SENSOR_ATTRIBUTES[self._attr]["unit"]
+            return SENSOR_ATTRIBUTES[self._attr][SENSOR_PARAM_UNIT]
 
         return None

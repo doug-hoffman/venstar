@@ -47,25 +47,29 @@ SENSOR_HUMIDITY = "hum"
 SENSOR_ID = "id"
 SENSOR_TEMPERATURE = "temp"
 
+SENSOR_PARAM_CLASS = "class"
+SENSOR_PARAM_NAME = "name"
+SENSOR_PARAM_UNIT = "unit"
+
 TEMPUNITS_F = 0
 TEMPUNITS_C = 1
 
 SENSOR_ATTRIBUTES = {
     SENSOR_BATTERY: {
-        "name": "Battery Level",
-        "class": DEVICE_CLASS_BATTERY,
-        "unit": PERCENTAGE,
+        SENSOR_PARAM_NAME: "Battery Level",
+        SENSOR_PARAM_CLASS: DEVICE_CLASS_BATTERY,
+        SENSOR_PARAM_UNIT: PERCENTAGE,
     },
     SENSOR_HUMIDITY: {
-        "name": "Humidity",
-        "class": DEVICE_CLASS_HUMIDITY,
-        "unit": PERCENTAGE,
+        SENSOR_PARAM_NAME: "Humidity",
+        SENSOR_PARAM_CLASS: DEVICE_CLASS_HUMIDITY,
+        SENSOR_PARAM_UNIT: PERCENTAGE,
     },
-    SENSOR_ID: {"name": "ID"},
+    SENSOR_ID: {SENSOR_PARAM_NAME: "ID"},
     SENSOR_TEMPERATURE: {
-        "name": "Temperature",
-        "class": DEVICE_CLASS_TEMPERATURE,
-        "unit": {
+        SENSOR_PARAM_NAME: "Temperature",
+        SENSOR_PARAM_CLASS: DEVICE_CLASS_TEMPERATURE,
+        SENSOR_PARAM_UNIT: {
             TEMPUNITS_F: TEMP_FAHRENHEIT,
             TEMPUNITS_C: TEMP_CELSIUS,
         },
