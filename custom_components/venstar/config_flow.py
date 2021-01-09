@@ -311,13 +311,11 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         )
 
         if self._unique_id is None:
-            self._unique_id = (
-                await async_construct_unique_id(
-                    self.hass,
-                    host=ssdp_input.get(CONF_HOST),
-                    port=ssdp_input.get(CONF_PORT),
-                    mac=ssdp_input.get(CONF_MAC),
-                ),
+            self._unique_id = await async_construct_unique_id(
+                self.hass,
+                host=ssdp_input.get(CONF_HOST),
+                port=ssdp_input.get(CONF_PORT),
+                mac=ssdp_input.get(CONF_MAC),
             )
         await self.async_set_unique_id(self._unique_id)
         self._abort_if_unique_id_configured()
