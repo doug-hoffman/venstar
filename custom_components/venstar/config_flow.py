@@ -292,7 +292,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         """Handle discovery by SSDP."""
         ssdp_input = {}
 
-        _LOGGER.info("SSDP detected new device")
+        _LOGGER.debug("SSDP detected device")
 
         for key in info:
             _LOGGER.debug(f"SSDP {key} = {info[key]}")
@@ -306,7 +306,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         ssdp_input[CONF_MAC] = format_mac(":".join(usn[2:8]))
         name = unquote(usn[9])
 
-        _LOGGER.info(
+        _LOGGER.debug(
             f"SSDP data: ssl={ssdp_input.get(CONF_SSL)} host={ssdp_input.get(CONF_HOST)} port={ssdp_input.get(CONF_PORT)} mac={ssdp_input.get(CONF_MAC)} name={name}"
         )
 

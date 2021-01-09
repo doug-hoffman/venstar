@@ -89,7 +89,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
         )
         raise ConfigEntryNotReady
 
-    _LOGGER.info(
+    _LOGGER.debug(
         f"{entry.title} initialized with protocol={protocol} address={addr} interval={interval} timeout={timeout}"
     )
 
