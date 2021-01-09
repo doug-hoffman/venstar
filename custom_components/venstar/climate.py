@@ -4,7 +4,6 @@ import logging
 from venstarcolortouch import VenstarColorTouch
 import voluptuous as vol
 
-from homeassistant.core import callback
 from homeassistant.components.climate import PLATFORM_SCHEMA, ClimateEntity
 from homeassistant.components.climate.const import (
     ATTR_HVAC_MODE,
@@ -45,20 +44,16 @@ from homeassistant.const import (
     TEMP_CELSIUS,
     TEMP_FAHRENHEIT,
 )
+from homeassistant.core import callback
+from homeassistant.helpers import device_registry as dr
 import homeassistant.helpers.config_validation as cv
 from homeassistant.helpers.event import async_call_later
-from homeassistant.helpers.update_coordinator import (
-    CoordinatorEntity,
-)
-from homeassistant.helpers import device_registry as dr
+from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .const import (
     ATTR_FAN_STATE,
     ATTR_HVAC_STATE,
     CONF_HUMIDIFIER,
-    ENTRY_API,
-    ENTRY_CONNECTION_STATE,
-    ENTRY_COORDINATOR,
     DEFAULT_CONF_HUMIDIFIER,
     DEFAULT_CONF_PASSWORD,
     DEFAULT_CONF_PIN,
@@ -67,6 +62,9 @@ from .const import (
     DEFAULT_CONF_TIMEOUT,
     DEFAULT_CONF_USERNAME,
     DOMAIN,
+    ENTRY_API,
+    ENTRY_CONNECTION_STATE,
+    ENTRY_COORDINATOR,
     HOLD_MODE_OFF,
     HOLD_MODE_TEMPERATURE,
     VALID_FAN_STATES,

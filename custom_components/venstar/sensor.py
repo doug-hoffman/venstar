@@ -13,9 +13,7 @@ from homeassistant.const import (
     TEMP_FAHRENHEIT,
 )
 from homeassistant.helpers.entity import Entity
-from homeassistant.helpers.update_coordinator import (
-    CoordinatorEntity,
-)
+from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .const import (
     DEFAULT_CONF_SENSORS,
@@ -27,10 +25,10 @@ from .const import (
     SENSOR_BATTERY,
     SENSOR_HUMIDITY,
     SENSOR_ID,
-    SENSOR_TEMPERATURE,
     SENSOR_PARAM_CLASS,
     SENSOR_PARAM_NAME,
     SENSOR_PARAM_UNIT,
+    SENSOR_TEMPERATURE,
 )
 
 _LOGGER = logging.getLogger(__name__)

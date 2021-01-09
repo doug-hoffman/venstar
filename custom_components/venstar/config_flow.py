@@ -1,11 +1,11 @@
 """Config flow for venstar integration."""
-import logging
-
 import asyncio
-import async_timeout
 from functools import partial
+import logging
+from urllib.parse import unquote, urlparse
+
+import async_timeout
 from getmac import get_mac_address
-from urllib.parse import urlparse, unquote
 from venstarcolortouch import VenstarColorTouch
 import voluptuous as vol
 
@@ -13,15 +13,15 @@ from homeassistant import config_entries, core, exceptions
 from homeassistant.components import ssdp
 from homeassistant.const import (
     CONF_HOST,
-    CONF_SCAN_INTERVAL,
     CONF_MAC,
     CONF_PASSWORD,
     CONF_PIN,
     CONF_PORT,
+    CONF_SCAN_INTERVAL,
+    CONF_SENSORS,
     CONF_SSL,
     CONF_TIMEOUT,
     CONF_USERNAME,
-    CONF_SENSORS,
 )
 from homeassistant.core import callback
 from homeassistant.helpers.device_registry import format_mac
@@ -33,10 +33,10 @@ from .const import (
     DEFAULT_CONF_PIN,
     DEFAULT_CONF_PORT,
     DEFAULT_CONF_SCAN_INTERVAL,
+    DEFAULT_CONF_SENSORS,
     DEFAULT_CONF_SSL,
     DEFAULT_CONF_TIMEOUT,
     DEFAULT_CONF_USERNAME,
-    DEFAULT_CONF_SENSORS,
     DOMAIN,
 )
 

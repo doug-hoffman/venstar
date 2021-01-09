@@ -1,48 +1,43 @@
 """The venstar integration."""
+import asyncio
+from datetime import timedelta
 import logging
 
-import asyncio
 import async_timeout
-from datetime import timedelta
 from venstarcolortouch import VenstarColorTouch
 import voluptuous as vol
 
-from homeassistant.config_entries import (
-    ConfigEntry,
-)
+from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import (
     CONF_HOST,
     CONF_PASSWORD,
     CONF_PIN,
     CONF_PORT,
     CONF_SCAN_INTERVAL,
+    CONF_SENSORS,
     CONF_SSL,
     CONF_TIMEOUT,
     CONF_USERNAME,
-    CONF_SENSORS,
 )
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryNotReady
-from homeassistant.helpers.update_coordinator import (
-    DataUpdateCoordinator,
-    UpdateFailed,
-)
+from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 
 from .const import (
     CONF_HUMIDIFIER,
-    ENTRY_API,
-    ENTRY_CONNECTION_STATE,
-    ENTRY_COORDINATOR,
     DEFAULT_CONF_HUMIDIFIER,
     DEFAULT_CONF_PASSWORD,
     DEFAULT_CONF_PIN,
     DEFAULT_CONF_PORT,
     DEFAULT_CONF_SCAN_INTERVAL,
+    DEFAULT_CONF_SENSORS,
     DEFAULT_CONF_SSL,
     DEFAULT_CONF_TIMEOUT,
     DEFAULT_CONF_USERNAME,
-    DEFAULT_CONF_SENSORS,
     DOMAIN,
+    ENTRY_API,
+    ENTRY_CONNECTION_STATE,
+    ENTRY_COORDINATOR,
     ENTRY_UNDO_UPDATE_LISTENER,
 )
 
