@@ -302,7 +302,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             True if urlparse(info[ssdp.ATTR_SSDP_LOCATION]).scheme == "https" else False
         )
         ssdp_input[CONF_HOST] = urlparse(info[ssdp.ATTR_SSDP_LOCATION]).hostname
-        ssdp_input[CONF_PORT] = str(urlparse(info[ssdp.ATTR_SSDP_LOCATION]).port) or ""
+        ssdp_input[CONF_PORT] = str(urlparse(info[ssdp.ATTR_SSDP_LOCATION]).port or "")
         usn = info[ssdp.ATTR_SSDP_USN].split(":")
         ssdp_input[CONF_MAC] = format_mac(":".join(usn[2:8]))
         name = unquote(usn[9])
