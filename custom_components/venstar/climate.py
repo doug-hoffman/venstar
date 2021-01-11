@@ -67,8 +67,52 @@ from .const import (
     ENTRY_COORDINATOR,
     HOLD_MODE_OFF,
     HOLD_MODE_TEMPERATURE,
+    MODE_MAP,
     VALID_FAN_STATES,
     VALID_THERMOSTAT_MODES,
+    VENSTAR_API_VER,
+    VENSTAR_AWAY,
+    VENSTAR_AWAY_AWAY,
+    VENSTAR_AWAY_HOME,
+    VENSTAR_COOLTEMP,
+    VENSTAR_DEHUM_SETPOINT,
+    VENSTAR_FAN,
+    VENSTAR_FAN_AUTO,
+    VENSTAR_FAN_ON,
+    VENSTAR_FANSTATE,
+    VENSTAR_FANSTATE_OFF,
+    VENSTAR_FANSTATE_ON,
+    VENSTAR_HEATTEMP,
+    VENSTAR_HUM_ACTIVE,
+    VENSTAR_HUM_SETPOINT,
+    VENSTAR_MODE,
+    VENSTAR_MODE_AUTO,
+    VENSTAR_MODE_COOL,
+    VENSTAR_MODE_HEAT,
+    VENSTAR_MODE_OFF,
+    VENSTAR_MODEL,
+    VENSTAR_NAME,
+    VENSTAR_SCHED_C,
+    VENSTAR_SCHED_F,
+    VENSTAR_SCHEDPART_DAY,
+    VENSTAR_SCHEDPART_EVENING,
+    VENSTAR_SCHEDPART_INACTIVE,
+    VENSTAR_SCHEDPART_MORNING,
+    VENSTAR_SCHEDPART_NIGHT,
+    VENSTAR_SCHEDULE,
+    VENSTAR_SCHEDULE_DISABLED,
+    VENSTAR_SCHEDULE_ENABLED,
+    VENSTAR_SETPOINT_DELTA,
+    VENSTAR_STATE,
+    VENSTAR_STATE_COOLING,
+    VENSTAR_STATE_ERROR,
+    VENSTAR_STATE_HEATING,
+    VENSTAR_STATE_IDLE,
+    VENSTAR_STATE_LOCKOUT,
+    VENSTAR_TEMPUNITS,
+    VENSTAR_TEMPUNITS_C,
+    VENSTAR_TEMPUNITS_F,
+    VENSTAR_TYPE,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -131,25 +175,22 @@ class VenstarThermostat(CoordinatorEntity, ClimateEntity):
         super().__init__(coordinator)
         self._client = api
         self._config_entry = config_entry
-        self._humidifier = config_entry.options.get(
-            CONF_HUMIDIFIER,
-            config_entry.data.get(CONF_HUMIDIFIER, DEFAULT_CONF_HUMIDIFIER),
-        )
-        self._mode_map = {
-            HVAC_MODE_HEAT: self._client.MODE_HEAT,
-            HVAC_MODE_COOL: self._client.MODE_COOL,
-            HVAC_MODE_AUTO: self._client.MODE_AUTO,
-        }
 
     @property
     def supported_features(self):
         """Return the list of supported features."""
         features = SUPPORT_TARGET_TEMPERATURE | SUPPORT_FAN_MODE | SUPPORT_PRESET_MODE
 
-        if self._client.mode == self._client.MODE_AUTO:
+        if getattr(self._client, VENSTAR_MODE) == VENSTAR_MODE_AUTO:
             features |= SUPPORT_TARGET_TEMPERATURE_RANGE
 
-        if self._humidifier and hasattr(self._client, "hum_active"):
+        if (
+            self._config_entry.options.get(
+                CONF_HUMIDIFIER,
+                self._config_entry.data.get(CONF_HUMIDIFIER, DEFAULT_CONF_HUMIDIFIER),
+            )
+            and hasattr(self._client, VENSTAR_HUM_ACTIVE)
+        ):
             features |= SUPPORT_TARGET_HUMIDITY
 
         return features
@@ -157,7 +198,7 @@ class VenstarThermostat(CoordinatorEntity, ClimateEntity):
     @property
     def name(self):
         """Return the name of the thermostat."""
-        return self._client.name
+        return getattr(self._client, VENSTAR_NAME)
 
     @property
     def unique_id(self):
@@ -171,7 +212,7 @@ class VenstarThermostat(CoordinatorEntity, ClimateEntity):
             "identifiers": {(DOMAIN, self.unique_id)},
             "manufacturer": "Venstar",
             "name": self._config_entry.title,
-            "model": self._client.model,
+            "model": getattr(self._client, VENSTAR_MODEL),
         }
         if self._config_entry.data.get(CONF_MAC) is not None:
             device_info["connections"] = {
@@ -199,7 +240,7 @@ class VenstarThermostat(CoordinatorEntity, ClimateEntity):
     @property
     def temperature_unit(self):
         """Return the unit of measurement, as defined by the API."""
-        if self._client.tempunits == self._client.TEMPUNITS_F:
+        if getattr(self._client, VENSTAR_TEMPUNITS) == VENSTAR_TEMPUNITS_F:
             return TEMP_FAHRENHEIT
         return TEMP_CELSIUS
 
@@ -226,29 +267,29 @@ class VenstarThermostat(CoordinatorEntity, ClimateEntity):
     @property
     def hvac_mode(self):
         """Return current operation mode ie. heat, cool, auto."""
-        if self._client.mode == self._client.MODE_HEAT:
+        if getattr(self._client, VENSTAR_MODE) == VENSTAR_MODE_HEAT:
             return HVAC_MODE_HEAT
-        if self._client.mode == self._client.MODE_COOL:
+        if getattr(self._client, VENSTAR_MODE) == VENSTAR_MODE_COOL:
             return HVAC_MODE_COOL
-        if self._client.mode == self._client.MODE_AUTO:
+        if getattr(self._client, VENSTAR_MODE) == VENSTAR_MODE_AUTO:
             return HVAC_MODE_AUTO
         return HVAC_MODE_OFF
 
     @property
     def hvac_action(self):
         """Return current operation mode ie. heat, cool, auto."""
-        if self._client.state == self._client.STATE_IDLE:
+        if getattr(self._client, VENSTAR_STATE) == VENSTAR_STATE_IDLE:
             return CURRENT_HVAC_IDLE
-        if self._client.state == self._client.STATE_HEATING:
+        if getattr(self._client, VENSTAR_STATE) == VENSTAR_STATE_HEATING:
             return CURRENT_HVAC_HEAT
-        if self._client.state == self._client.STATE_COOLING:
+        if getattr(self._client, VENSTAR_STATE) == VENSTAR_STATE_COOLING:
             return CURRENT_HVAC_COOL
         return CURRENT_HVAC_OFF
 
     @property
     def fan_mode(self):
         """Return the current fan mode."""
-        if self._client.fan == self._client.FAN_ON:
+        if getattr(self._client, VENSTAR_FAN) == VENSTAR_FAN_ON:
             return FAN_ON
         return FAN_AUTO
 
@@ -256,37 +297,37 @@ class VenstarThermostat(CoordinatorEntity, ClimateEntity):
     def device_state_attributes(self):
         """Return the optional state attributes."""
         return {
-            ATTR_FAN_STATE: self._client.fanstate,
-            ATTR_HVAC_STATE: self._client.state,
+            ATTR_FAN_STATE: getattr(self._client, VENSTAR_FANSTATE),
+            ATTR_HVAC_STATE: getattr(self._client, VENSTAR_STATE),
         }
 
     @property
     def target_temperature(self):
         """Return the target temperature we try to reach."""
-        if self._client.mode == self._client.MODE_HEAT:
-            return self._client.heattemp
-        if self._client.mode == self._client.MODE_COOL:
-            return self._client.cooltemp
+        if getattr(self._client, VENSTAR_MODE) == VENSTAR_MODE_HEAT:
+            return getattr(self._client, VENSTAR_HEATTEMP)
+        if getattr(self._client, VENSTAR_MODE) == VENSTAR_MODE_COOL:
+            return getattr(self._client, VENSTAR_COOLTEMP)
         return None
 
     @property
     def target_temperature_low(self):
         """Return the lower bound temp if auto mode is on."""
-        if self._client.mode == self._client.MODE_AUTO:
-            return self._client.heattemp
+        if getattr(self._client, VENSTAR_MODE) == VENSTAR_MODE_AUTO:
+            return getattr(self._client, VENSTAR_HEATTEMP)
         return None
 
     @property
     def target_temperature_high(self):
         """Return the upper bound temp if auto mode is on."""
-        if self._client.mode == self._client.MODE_AUTO:
-            return self._client.cooltemp
+        if getattr(self._client, VENSTAR_MODE) == VENSTAR_MODE_AUTO:
+            return getattr(self._client, VENSTAR_COOLTEMP)
         return None
 
     @property
     def target_humidity(self):
         """Return the humidity we try to reach."""
-        return self._client.hum_setpoint
+        return getattr(self._client, VENSTAR_HUM_SETPOINT)
 
     @property
     def min_humidity(self):
@@ -301,9 +342,9 @@ class VenstarThermostat(CoordinatorEntity, ClimateEntity):
     @property
     def preset_mode(self):
         """Return current preset."""
-        if self._client.away:
+        if getattr(self._client, VENSTAR_AWAY) == VENSTAR_AWAY_AWAY:
             return PRESET_AWAY
-        if self._client.schedule == 0:
+        if getattr(self._client, VENSTAR_SCHEDULE) == VENSTAR_SCHEDULE_DISABLED:
             return HOLD_MODE_TEMPERATURE
         return PRESET_NONE
 
@@ -315,13 +356,13 @@ class VenstarThermostat(CoordinatorEntity, ClimateEntity):
     def _set_operation_mode(self, operation_mode):
         """Change the operation mode (internal)."""
         if operation_mode == HVAC_MODE_HEAT:
-            success = self._client.set_mode(self._client.MODE_HEAT)
+            success = self._client.set_mode(VENSTAR_MODE_HEAT)
         elif operation_mode == HVAC_MODE_COOL:
-            success = self._client.set_mode(self._client.MODE_COOL)
+            success = self._client.set_mode(VENSTAR_MODE_COOL)
         elif operation_mode == HVAC_MODE_AUTO:
-            success = self._client.set_mode(self._client.MODE_AUTO)
+            success = self._client.set_mode(VENSTAR_MODE_AUTO)
         else:
-            success = self._client.set_mode(self._client.MODE_OFF)
+            success = self._client.set_mode(VENSTAR_MODE_OFF)
 
         if not success:
             _LOGGER.error("Failed to change the operation mode")
@@ -335,23 +376,29 @@ class VenstarThermostat(CoordinatorEntity, ClimateEntity):
         temp_high = kwargs.get(ATTR_TARGET_TEMP_HIGH)
         temperature = kwargs.get(ATTR_TEMPERATURE)
 
-        if operation_mode and self._mode_map.get(operation_mode) != self._client.mode:
+        if operation_mode and MODE_MAP.get(operation_mode) != getattr(
+            self._client, VENSTAR_MODE
+        ):
             set_temp = self._set_operation_mode(operation_mode)
 
         if set_temp:
             if (
-                self._mode_map.get(operation_mode, self._client.mode)
-                == self._client.MODE_HEAT
+                MODE_MAP.get(operation_mode, getattr(self._client, VENSTAR_MODE))
+                == VENSTAR_MODE_HEAT
             ):
-                success = self._client.set_setpoints(temperature, self._client.cooltemp)
+                success = self._client.set_setpoints(
+                    temperature, getattr(self._client, VENSTAR_COOLTEMP)
+                )
             elif (
-                self._mode_map.get(operation_mode, self._client.mode)
-                == self._client.MODE_COOL
+                MODE_MAP.get(operation_mode, getattr(self._client, VENSTAR_MODE))
+                == VENSTAR_MODE_COOL
             ):
-                success = self._client.set_setpoints(self._client.heattemp, temperature)
+                success = self._client.set_setpoints(
+                    getattr(self._client, VENSTAR_HEATTEMP), temperature
+                )
             elif (
-                self._mode_map.get(operation_mode, self._client.mode)
-                == self._client.MODE_AUTO
+                MODE_MAP.get(operation_mode, getattr(self._client, VENSTAR_MODE))
+                == VENSTAR_MODE_AUTO
             ):
                 success = self._client.set_setpoints(temp_low, temp_high)
             else:
@@ -368,9 +415,9 @@ class VenstarThermostat(CoordinatorEntity, ClimateEntity):
     def set_fan_mode(self, fan_mode):
         """Set new target fan mode."""
         if fan_mode == STATE_ON:
-            success = self._client.set_fan(self._client.FAN_ON)
+            success = self._client.set_fan(VENSTAR_FAN_ON)
         else:
-            success = self._client.set_fan(self._client.FAN_AUTO)
+            success = self._client.set_fan(VENSTAR_FAN_AUTO)
 
         if not success:
             _LOGGER.error("Failed to change the fan mode")
@@ -389,13 +436,13 @@ class VenstarThermostat(CoordinatorEntity, ClimateEntity):
     def set_preset_mode(self, preset_mode):
         """Set the hold mode."""
         if preset_mode == PRESET_AWAY:
-            success = self._client.set_away(self._client.AWAY_AWAY)
+            success = self._client.set_away(VENSTAR_AWAY_AWAY)
         elif preset_mode == HOLD_MODE_TEMPERATURE:
-            success = self._client.set_away(self._client.AWAY_HOME)
-            success = success and self._client.set_schedule(0)
+            success = self._client.set_away(VENSTAR_AWAY_HOME)
+            success = success and self._client.set_schedule(VENSTAR_SCHEDULE_DISABLED)
         elif preset_mode == PRESET_NONE:
-            success = self._client.set_away(self._client.AWAY_HOME)
-            success = success and self._client.set_schedule(1)
+            success = self._client.set_away(VENSTAR_AWAY_HOME)
+            success = success and self._client.set_schedule(VENSTAR_SCHEDULE_ENABLED)
         else:
             _LOGGER.error("Unknown hold mode: %s", preset_mode)
             success = False

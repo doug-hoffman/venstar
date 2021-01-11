@@ -38,6 +38,7 @@ from .const import (
     DEFAULT_CONF_TIMEOUT,
     DEFAULT_CONF_USERNAME,
     DOMAIN,
+    VENSTAR_NAME,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -69,7 +70,7 @@ async def validate_input(hass: core.HomeAssistant, user_input):
 
     # Return info that you want to store in the config entry.
     return {
-        "title": api.name,
+        "title": getattr(api, VENSTAR_NAME),
     }
 
 
