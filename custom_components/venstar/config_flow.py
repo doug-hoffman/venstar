@@ -27,11 +27,15 @@ from homeassistant.core import callback
 from homeassistant.helpers.device_registry import format_mac
 
 from .const import (
+    CONF_ALERTS,
     CONF_HUMIDIFIER,
+    CONF_RUNTIMES,
+    DEFAULT_CONF_ALERTS,
     DEFAULT_CONF_HUMIDIFIER,
     DEFAULT_CONF_PASSWORD,
     DEFAULT_CONF_PIN,
     DEFAULT_CONF_PORT,
+    DEFAULT_CONF_RUNTIMES,
     DEFAULT_CONF_SCAN_INTERVAL,
     DEFAULT_CONF_SENSORS,
     DEFAULT_CONF_SSL,
@@ -96,7 +100,7 @@ async def async_get_mac(hass: core.HomeAssistant, host):
 async def async_construct_unique_id(
     hass: core.HomeAssistant, host=None, port=None, mac=None
 ):
-    """Construct a unique identifier for the thermostat"""
+    """Construct a unique identifier for the thermostat."""
     id = None
 
     if mac is None:
@@ -132,6 +136,22 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                         CONF_HUMIDIFIER,
                         user_input=user_input,
                         default=DEFAULT_CONF_HUMIDIFIER,
+                    ),
+                ): bool,
+                vol.Required(
+                    CONF_ALERTS,
+                    default=self.get_option(
+                        CONF_ALERTS,
+                        user_input=user_input,
+                        default=DEFAULT_CONF_ALERTS,
+                    ),
+                ): bool,
+                vol.Required(
+                    CONF_RUNTIMES,
+                    default=self.get_option(
+                        CONF_RUNTIMES,
+                        user_input=user_input,
+                        default=DEFAULT_CONF_RUNTIMES,
                     ),
                 ): bool,
                 vol.Required(
@@ -180,7 +200,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
         )
 
     def get_option(self, id, user_input=None, default=None):
-        """Return config option"""
+        """Return config option."""
         if user_input is None:
             user_input = {}
 
@@ -197,6 +217,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     CONNECTION_CLASS = config_entries.CONN_CLASS_LOCAL_POLL
 
     def __init__(self):
+        """Init object."""
         self._discovery_data = {}
         self._unique_id = None
 
@@ -336,7 +357,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         return await self.async_step_user(config_input)
 
     def get_config(self, id, user_input=None, default=None):
-        """Return config data"""
+        """Return config data."""
         if user_input is None:
             user_input = {}
 
@@ -347,7 +368,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
     @property
     def unique_id(self):
-        """Return the unique identifer of the entry."""
+        """Return the unique identifier of the entry."""
         return self._unique_id
 
 

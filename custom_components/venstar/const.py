@@ -3,17 +3,24 @@
 from venstarcolortouch import VenstarColorTouch
 
 from homeassistant.components.climate.const import (
+    CURRENT_HVAC_COOL,
+    CURRENT_HVAC_HEAT,
+    CURRENT_HVAC_IDLE,
+    CURRENT_HVAC_OFF,
+    FAN_AUTO,
+    FAN_ON,
     HVAC_MODE_AUTO,
     HVAC_MODE_COOL,
     HVAC_MODE_HEAT,
     HVAC_MODE_OFF,
+    PRESET_AWAY,
+    PRESET_NONE,
 )
 from homeassistant.const import (
     DEVICE_CLASS_BATTERY,
     DEVICE_CLASS_HUMIDITY,
     DEVICE_CLASS_TEMPERATURE,
     PERCENTAGE,
-    STATE_ON,
     TEMP_CELSIUS,
     TEMP_FAHRENHEIT,
 )
@@ -69,17 +76,24 @@ VENSTAR_TYPE = "_type"
 
 del api
 
+ALERT_NAME = "name"
+ALERT_ACTIVE = "active"
+
 ATTR_FAN_STATE = "fan_state"
 ATTR_HVAC_STATE = "hvac_mode"
 
 DOMAIN = "venstar"
 
+CONF_ALERTS = "alerts"
 CONF_HUMIDIFIER = "humidifier"
+CONF_RUNTIMES = "runtimes"
 
+DEFAULT_CONF_ALERTS = True
 DEFAULT_CONF_HUMIDIFIER = False
 DEFAULT_CONF_PASSWORD = ""
 DEFAULT_CONF_PIN = ""
 DEFAULT_CONF_PORT = ""
+DEFAULT_CONF_RUNTIMES = True
 DEFAULT_CONF_SCAN_INTERVAL = 10
 DEFAULT_CONF_SENSORS = True
 DEFAULT_CONF_SSL = False
@@ -100,14 +114,51 @@ MODE_MAP = {
     HVAC_MODE_AUTO: VENSTAR_MODE_AUTO,
 }
 
+SENSOR_PARAM_CLASS = "class"
+SENSOR_PARAM_NAME = "name"
+SENSOR_PARAM_UNIT = "unit"
+
+RUNTIME_TS = "ts"
+RUNTIME_HEAT1 = "heat1"
+RUNTIME_HEAT2 = "heat2"
+RUNTIME_COOL1 = "cool1"
+RUNTIME_COOL2 = "cool2"
+RUNTIME_AUX1 = "aux1"
+RUNTIME_AUX2 = "aux2"
+RUNTIME_FC = "fc"
+RUNTIME_OV = "ov"
+
+RUNTIME_ATTRIBUTES = {
+    RUNTIME_HEAT1: {
+        SENSOR_PARAM_NAME: "Heating Stage 1",
+    },
+    RUNTIME_HEAT2: {
+        SENSOR_PARAM_NAME: "Heating Stage 2",
+    },
+    RUNTIME_COOL1: {
+        SENSOR_PARAM_NAME: "Cooling Stage 1",
+    },
+    RUNTIME_COOL2: {
+        SENSOR_PARAM_NAME: "Cooling Stage 2",
+    },
+    RUNTIME_AUX1: {
+        SENSOR_PARAM_NAME: "Aux Stage 1",
+    },
+    RUNTIME_AUX2: {
+        SENSOR_PARAM_NAME: "Aux Stage 2",
+    },
+    RUNTIME_FC: {
+        SENSOR_PARAM_NAME: "Free Cooling",
+    },
+    RUNTIME_OV: {
+        SENSOR_PARAM_NAME: "Override",
+    },
+}
+
 SENSOR_BATTERY = "battery"
 SENSOR_HUMIDITY = "hum"
 SENSOR_ID = "id"
 SENSOR_TEMPERATURE = "temp"
-
-SENSOR_PARAM_CLASS = "class"
-SENSOR_PARAM_NAME = "name"
-SENSOR_PARAM_UNIT = "unit"
 
 SENSOR_ATTRIBUTES = {
     SENSOR_BATTERY: {
@@ -131,5 +182,24 @@ SENSOR_ATTRIBUTES = {
     },
 }
 
-VALID_FAN_STATES = [STATE_ON, HVAC_MODE_AUTO]
-VALID_THERMOSTAT_MODES = [HVAC_MODE_HEAT, HVAC_MODE_COOL, HVAC_MODE_OFF, HVAC_MODE_AUTO]
+VALID_FAN_STATES = [
+    FAN_ON,
+    FAN_AUTO,
+]
+VALID_PRESET_MODES = [
+    PRESET_NONE,
+    PRESET_AWAY,
+    HOLD_MODE_TEMPERATURE,
+]
+VALID_THERMOSTAT_ACTIONS = [
+    CURRENT_HVAC_HEAT,
+    CURRENT_HVAC_COOL,
+    CURRENT_HVAC_IDLE,
+    CURRENT_HVAC_OFF,
+]
+VALID_THERMOSTAT_MODES = [
+    HVAC_MODE_HEAT,
+    HVAC_MODE_COOL,
+    HVAC_MODE_OFF,
+    HVAC_MODE_AUTO,
+]

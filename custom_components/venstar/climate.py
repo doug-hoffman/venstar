@@ -1,7 +1,6 @@
 """Support for Venstar WiFi Thermostats."""
 import logging
 
-from venstarcolortouch import VenstarColorTouch
 import voluptuous as vol
 
 from homeassistant.components.climate import PLATFORM_SCHEMA, ClimateEntity
@@ -34,7 +33,6 @@ from homeassistant.const import (
     CONF_MAC,
     CONF_PASSWORD,
     CONF_PIN,
-    CONF_PORT,
     CONF_SSL,
     CONF_TIMEOUT,
     CONF_USERNAME,
@@ -57,7 +55,6 @@ from .const import (
     DEFAULT_CONF_HUMIDIFIER,
     DEFAULT_CONF_PASSWORD,
     DEFAULT_CONF_PIN,
-    DEFAULT_CONF_PORT,
     DEFAULT_CONF_SSL,
     DEFAULT_CONF_TIMEOUT,
     DEFAULT_CONF_USERNAME,
@@ -65,23 +62,19 @@ from .const import (
     ENTRY_API,
     ENTRY_CONNECTION_STATE,
     ENTRY_COORDINATOR,
-    HOLD_MODE_OFF,
     HOLD_MODE_TEMPERATURE,
     MODE_MAP,
     VALID_FAN_STATES,
+    VALID_PRESET_MODES,
     VALID_THERMOSTAT_MODES,
-    VENSTAR_API_VER,
     VENSTAR_AWAY,
     VENSTAR_AWAY_AWAY,
     VENSTAR_AWAY_HOME,
     VENSTAR_COOLTEMP,
-    VENSTAR_DEHUM_SETPOINT,
     VENSTAR_FAN,
     VENSTAR_FAN_AUTO,
     VENSTAR_FAN_ON,
     VENSTAR_FANSTATE,
-    VENSTAR_FANSTATE_OFF,
-    VENSTAR_FANSTATE_ON,
     VENSTAR_HEATTEMP,
     VENSTAR_HUM_ACTIVE,
     VENSTAR_HUM_SETPOINT,
@@ -92,27 +85,15 @@ from .const import (
     VENSTAR_MODE_OFF,
     VENSTAR_MODEL,
     VENSTAR_NAME,
-    VENSTAR_SCHED_C,
-    VENSTAR_SCHED_F,
-    VENSTAR_SCHEDPART_DAY,
-    VENSTAR_SCHEDPART_EVENING,
-    VENSTAR_SCHEDPART_INACTIVE,
-    VENSTAR_SCHEDPART_MORNING,
-    VENSTAR_SCHEDPART_NIGHT,
     VENSTAR_SCHEDULE,
     VENSTAR_SCHEDULE_DISABLED,
     VENSTAR_SCHEDULE_ENABLED,
-    VENSTAR_SETPOINT_DELTA,
     VENSTAR_STATE,
     VENSTAR_STATE_COOLING,
-    VENSTAR_STATE_ERROR,
     VENSTAR_STATE_HEATING,
     VENSTAR_STATE_IDLE,
-    VENSTAR_STATE_LOCKOUT,
     VENSTAR_TEMPUNITS,
-    VENSTAR_TEMPUNITS_C,
     VENSTAR_TEMPUNITS_F,
-    VENSTAR_TYPE,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -202,7 +183,7 @@ class VenstarThermostat(CoordinatorEntity, ClimateEntity):
 
     @property
     def unique_id(self):
-        """Return the unique identifer of the thermostat."""
+        """Return the unique identifier of the thermostat."""
         return f"{self._config_entry.unique_id or self._config_entry.entry_id}-Thermostat-Device"
 
     @property
@@ -351,7 +332,7 @@ class VenstarThermostat(CoordinatorEntity, ClimateEntity):
     @property
     def preset_modes(self):
         """Return valid preset modes."""
-        return [PRESET_NONE, PRESET_AWAY, HOLD_MODE_TEMPERATURE]
+        return VALID_PRESET_MODES
 
     def _set_operation_mode(self, operation_mode):
         """Change the operation mode (internal)."""

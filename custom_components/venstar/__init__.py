@@ -14,7 +14,6 @@ from homeassistant.const import (
     CONF_PIN,
     CONF_PORT,
     CONF_SCAN_INTERVAL,
-    CONF_SENSORS,
     CONF_SSL,
     CONF_TIMEOUT,
     CONF_USERNAME,
@@ -24,13 +23,14 @@ from homeassistant.exceptions import ConfigEntryNotReady
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 
 from .const import (
-    CONF_HUMIDIFIER,
-    DEFAULT_CONF_HUMIDIFIER,
+    CONF_ALERTS,
+    CONF_RUNTIMES,
+    DEFAULT_CONF_ALERTS,
     DEFAULT_CONF_PASSWORD,
     DEFAULT_CONF_PIN,
     DEFAULT_CONF_PORT,
+    DEFAULT_CONF_RUNTIMES,
     DEFAULT_CONF_SCAN_INTERVAL,
-    DEFAULT_CONF_SENSORS,
     DEFAULT_CONF_SSL,
     DEFAULT_CONF_TIMEOUT,
     DEFAULT_CONF_USERNAME,
@@ -45,7 +45,7 @@ _LOGGER = logging.getLogger(__name__)
 
 CONFIG_SCHEMA = vol.Schema({DOMAIN: vol.Schema({})}, extra=vol.ALLOW_EXTRA)
 
-PLATFORMS = ["climate", "sensor"]
+PLATFORMS = ["binary_sensor", "climate", "sensor"]
 
 
 async def async_setup(hass: HomeAssistant, config: dict):
@@ -99,11 +99,17 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
         """Fetch data from API endpoint."""
         try:
             async with async_timeout.timeout(timeout):
-                info_success = await hass.async_add_executor_job(api.update_info)
-                sensor_success = await hass.async_add_executor_job(api.update_sensors)
-            if not info_success or not sensor_success:
-                hass.data[DOMAIN][entry.entry_id][ENTRY_CONNECTION_STATE] = False
-                raise UpdateFailed("unable to update data")
+                # api.update(alerts, info, runtimes, sensors)
+                if not await hass.async_add_executor_job(
+                    api.update,
+                    entry.options.get(CONF_ALERTS, DEFAULT_CONF_ALERTS),
+                    True,
+                    entry.options.get(CONF_RUNTIMES, DEFAULT_CONF_RUNTIMES),
+                    True,
+                ):
+                    hass.data[DOMAIN][entry.entry_id][ENTRY_CONNECTION_STATE] = False
+                    raise UpdateFailed("unable to update data")
+
         except asyncio.TimeoutError:
             hass.data[DOMAIN][entry.entry_id][ENTRY_CONNECTION_STATE] = False
             raise UpdateFailed("timeout occurred while updating data")

@@ -28,7 +28,9 @@
         "step": {
             "init": {
                 "data": {
+                    "alerts": "Enable alert sensors",
                     "humidifier": "Enable humidifier support",
+                    "runtimes": "Enable runtime sensors",
                     "scan_interval": "Update interval (seconds)",
                     "sensors": "Enable sensors",
                     "timeout": "Timeout (seconds)"
