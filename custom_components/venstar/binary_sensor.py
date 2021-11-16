@@ -93,8 +93,7 @@ class VenstarAlertSensor(CoordinatorEntity, BinarySensorEntity):
     @property
     def is_on(self):
         """Return the state of the sensor."""
-        for sensor in self._api.alerts:
-            if sensor.get(ALERT_NAME) == self._sensor:
-                state = sensor.get(ALERT_ACTIVE)
-        if type(state) is bool:
-            return state
+        if isinstance(self._api.alerts, list):
+            for sensor in self._api.alerts:
+                if sensor.get(ALERT_NAME) == self._sensor and isinstance(sensor.get(ALERT_ACTIVE), bool):
+                    return sensor.get(ALERT_ACTIVE)
