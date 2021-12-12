@@ -198,10 +198,11 @@ class VenstarRuntimeSensor(CoordinatorEntity, Entity):
     @property
     def state(self):
         """Return the state of the sensor."""
-        if self._sensor in self._api.runtimes[-1]:
-            state = self._api.runtimes[-1][self._sensor]
-        if type(state) is int or type(state) is float:
-            return state
+        if isinstance(self._api.runtimes, list):
+            if self._sensor in self._api.runtimes[-1]:
+                state = self._api.runtimes[-1][self._sensor]
+            if type(state) is int or type(state) is float:
+                return state
 
         return None
 
